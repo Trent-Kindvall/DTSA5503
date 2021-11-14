@@ -1,0 +1,71 @@
+---
+title: "NYPD_Shooting"
+author: "Trent Kindvall"
+date: "11/3/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+###NYPD Shooting Analysis
+
+
+#Libraries
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library('tidyverse')
+library('ggrepel')
+```
+
+#Data Import
+```{r echo=TRUE}
+df = read_csv("https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD")
+df
+
+```
+
+#Feature Engineering
+```{r}
+n <- 4  
+df$YEAR <- substr(df$OCCUR_DATE, nchar(df$OCCUR_DATE) - n + 1, nchar(df$OCCUR_DATE))
+```
+## Frequency of shootings by Neigborhood
+```{r}
+boro <- table(df$BORO)
+boro <- as.data.frame(boro)
+boro$Percent <- round((boro$Freq / sum(boro$Freq)*100),2)
+
+ggplot(boro, aes(x=Var1, y=Freq, fill=Var1)) + geom_bar(stat="identity") + geom_text_repel(data=boro, aes(label=Var1))
+
+```
+This graphic shows us which borough of New York had the most shootings shootings over the last 14 years. Now this graphic assumes a lot in that we are assuming that shootings are equal year in year out so now lets explore this assumption. 
+
+
+To explore this further we can graph the data by year and borough.
+```{r}
+boro_dt <- df()
+
+dens_plot<- ggplot(data = df,aes(x=OCCUR_DATE, y =  ,group=BORO,colour=BORO)) + geom_line()
+
+dens_plot
+
+```
+
+```{r}
+
+yr<- table(df$YEAR)
+yr <- as.data.frame(yr)
+
+fit <- lm(yr$Var1~yr$Freq, data=yr)
+fit
+#predicted_df <- data.frame(freq_pred = predict(fit,y), Year= y)
+#predicted_df
+
+ggplot(data=yr, aes(x=Var1, y=Freq, group=1)) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+This graph shows us that on the whole shooting in New York Cit have been droping ove the past 14 of years. Which allows us to better understand the graph above in that we know shooting are decreasing and it allows us to project shootings in the furture. While there is still a lot that needs to be explored with this data, it is a start. 
