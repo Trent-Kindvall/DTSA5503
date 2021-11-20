@@ -7,36 +7,42 @@ output:
   html_document: default
 ---
 
-###NYPD Shooting Analysis
+### NYPD Shooting Analysis
 
 
-#Libraries
+# Libraries
 ```{r setup}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library('tidyverse')
 library('ggrepel')
 library('dbplyr')
 ```
 
-#Data Import
+# Data Import
 ```{r echo=TRUE}
 df = read_csv("https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD")
-df
 
 ```
+# Data
+This data is coming from the City of New York. Which they update every year to increase the visibility and the transparency of the police force. This allows for the general public to have a better understanding of different crime in their area. 
 
-#Feature Engineering
+# Feature Engineering
 ```{r}
 n <- 4  
 df$YEAR <- substr(df$OCCUR_DATE, nchar(df$OCCUR_DATE) - n + 1, nchar(df$OCCUR_DATE))
 ```
+Adding in year to allow us to easily look at the data in a year over year basis.
+
 ## Frequency of shootings by Neigborhood
+In this analysis we are going to look at which boroughs have the most shootings. This is important when evaluating policing and the public's safety in New York City (NYC).
+
 ```{r}
 boro <- table(df$BORO)
 boro <- as.data.frame(boro)
 boro$Percent <- round((boro$Freq / sum(boro$Freq)*100),2)
 
-ggplot(boro, aes(x=Var1, y=Freq, fill=Var1)) + geom_bar(stat="identity") + geom_text_repel(data=boro, aes(label=Var1))
+ggplot(boro, aes(x=Var1, y=Freq, fill=Var1)) + geom_bar(stat="identity") + geom_text_repel(data=boro, aes(label=Var1)) +xlab('Borough')+ ylab('Number of Shootings')+ ggtitle('Borough vs Number of Shootings') +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
 This graphic shows us which borough of New York had the most shootings shootings over the last 14 years. Now this graphic assumes a lot in that we are assuming that shootings are equal year in year out so now lets explore this assumption. 
@@ -47,7 +53,8 @@ To explore this further we can graph the data by year and borough.
 b_dt <- df%>%group_by(YEAR)%>%count(BORO)
 
 
-dens_plot<- ggplot(data = b_dt,aes(x=YEAR, y = n ,group=BORO,colour=BORO)) + geom_line()
+dens_plot<- ggplot(data = b_dt,aes(x=YEAR, y = n ,group=BORO,colour=BORO)) + geom_line()+xlab('Year')+ ylab('Number of Shootings')+ ggtitle('Year vs Number of Shootings') +
+  theme(plot.title = element_text(hjust = 0.5))
 
 dens_plot
 
@@ -58,16 +65,13 @@ This graph shows that with the exception of 2020, we have been seeing a drop in 
 yr<- table(df$YEAR)
 yr <- as.data.frame(yr)
 
-fit <- lm(yr$Var1~yr$Freq, data=yr)
-fit
-#predicted_df <- data.frame(freq_pred = predict(fit,y), Year= y)
-#predicted_df
-
 ggplot(data=b_dt, aes(x=YEAR, y=n, group=BORO,colour=BORO)) +
   geom_point()+
-  geom_smooth( se = FALSE)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
+  xlab('Year')+
+ ylab('Number of Shootings')+
+ ggtitle('Borough vs Number of Shootings Model') +
+  theme(plot.title = element_text(hjust = 0.5))+
+geom_smooth( se = FALSE)
 ```
 This graph shows that while there is a general lowering of shootings over the past couple of years, in 2020 there was an increase in 2020. While this increase isn't yet a trend as the general movement of the volume of shootings is still moving downward, we could look bring in more data for 2020 as to why there was an increase to help us decide if we needed to make any changes in policing. 
 
@@ -76,8 +80,17 @@ This graph shows that while there is a general lowering of shootings over the pa
 ggplot(data=yr, aes(x=Var1, y=Freq, group=1)) +
   geom_point()+
   geom_smooth(method = "lm", se = FALSE,show.legend = TRUE)+
-  geom_smooth( se = FALSE,show.legend = TRUE)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_smooth( se = FALSE,show.legend = TRUE,colour ='red')+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  xlab('Year')+
+  ylab('Number of Shootings')+
+  ggtitle('Year vs Number of Shootings Model')+
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
-This graph shows us that on the whole shooting in New York City (NYC) have been dropping over the past 14 of years. Knowing that the boroughs themselves are dropping in we can definitively conclude that shootings in NYC are lowering. This model allows us to forecast forward and see 2 possible forecasting lines that we could use to predict the number of shootings in 2021 and beyond. We would need more data than we have available to decide which one we think is more likely to happen. If we looked at why the shootings rose in 2020 we might conclude that it was a single year phenomena and that the linear fit is more likely moving forward. Or we could see a change in the reason for shootings in 2020 that would would continue to increase or just tapper off at a new normal. I think that with the number of political rallys in 2020 that we could expect something in between the two in 2021 and  we start to drop again in 2022.
+
+## Conclusion
+This graph shows us that on the whole shooting in New York City (NYC) have been dropping over the past 14 of years. Knowing that the boroughs themselves are dropping in we can definitively conclude that shootings in NYC are lowering. This model allows us to forecast forward and see 2 possible forecasting lines that we could use to predict the number of shootings in 2021 and beyond. We would need more data than we have available to decide which one we think is more likely to happen. If we looked at why the shootings rose in 2020 we might conclude that it was a single year phenomena and that the linear fit is more likely moving forward. Or we could see a change in the reason for shootings in 2020 that would would continue to increase or just tapper off at a new normal. I think that with the number of political rallies in 2020 that we could expect something in between the two in 2021 and  we start to drop again in 2022.
+
+## Bias
+In this data set we are limited by a number of factors. Most importantly we don't have the number of people living in each borough by year to control for population size. this would give us a much better understanding of the rate that shootings are happening per person who lives in that area.A second way that we are limited is we don't know what circumstances were behind the shootings. For example we don't know the reason the shooters were deciding to do those actions. were they muggings that ended up in a violent altercation, was it gang related, or was it at a political rally? All these things could be very helpful in understanding why the shootings are happening and if they are going to continue in the future. This would make it much easier to understand why there was such a large jump in 2020 when in the past 13 years there was a general trend  of lowering shootings year over year. This would be important to how we vote and police in the future. 
