@@ -1,10 +1,9 @@
 ---
-title: "NYPD_Shooting"
+title: "NYPD Shootings by Borough"
 author: "Trent Kindvall"
 date: "11/3/2021"
 output:
   pdf_document: default
-  html_document: default
 ---
 
 ### NYPD Shooting Analysis
@@ -20,7 +19,7 @@ library('dbplyr')
 
 # Data Import
 ```{r echo=TRUE}
-df = read_csv("https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD")
+df = read_csv("https://data.cityofnewyork.us/api/views/833y-fsy8/rows.csv?accessType=DOWNLOAD",show_col_types = FALSE)
 
 ```
 # Data
@@ -33,7 +32,7 @@ df$YEAR <- substr(df$OCCUR_DATE, nchar(df$OCCUR_DATE) - n + 1, nchar(df$OCCUR_DA
 ```
 Adding in year to allow us to easily look at the data in a year over year basis.
 
-## Frequency of shootings by Neigborhood
+# Analysis of Frequency of Shootings by Neigborhood
 In this analysis we are going to look at which boroughs have the most shootings. This is important when evaluating policing and the public's safety in New York City (NYC).
 
 ```{r}
@@ -89,7 +88,7 @@ ggplot(data=yr, aes(x=Var1, y=Freq, group=1)) +
 
 ```
 
-## Conclusion
+# Conclusion
 This graph shows us that on the whole shooting in New York City (NYC) have been dropping over the past 14 of years. Knowing that the boroughs themselves are dropping in we can definitively conclude that shootings in NYC are lowering. This model allows us to forecast forward and see 2 possible forecasting lines that we could use to predict the number of shootings in 2021 and beyond. We would need more data than we have available to decide which one we think is more likely to happen. If we looked at why the shootings rose in 2020 we might conclude that it was a single year phenomena and that the linear fit is more likely moving forward. Or we could see a change in the reason for shootings in 2020 that would would continue to increase or just tapper off at a new normal. I think that with the number of political rallies in 2020 that we could expect something in between the two in 2021 and  we start to drop again in 2022.
 
 ## Bias
